@@ -3,30 +3,27 @@ name: Deploy HTML to GitHub Pages
 on:
   push:
     branches:
-      - main   # Change if your default branch is different
-  workflow_dispatch:   # ✅ allows manual trigger from GitHub Actions tab
-
+      - main   
+  workflow_dispatch:   
 permissions:
   contents: read
   pages: write
-  id-token: write   # ✅ required for deploy-pages@v4
-
+  id-token: write  
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4   # ✅ latest version
+        uses: actions/checkout@v4  
 
       - name: Setup Pages
-        uses: actions/configure-pages@v3   # ✅ required for GitHub Pages
+        uses: actions/configure-pages@v3   
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3   # ✅ latest version
+        uses: actions/upload-pages-artifact@v3   
         with:
-          path: ./   # 👈 change this if your HTML files are inside a folder (e.g., ./cake-shop-website-template)
-
+          path: ./  
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4   # ✅ latest version
+        uses: actions/deploy-pages@v4   
