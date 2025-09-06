@@ -25,7 +25,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3   # ✅ latest version
         with:
-          path: ./project   # 👈 change this if your HTML files are inside a folder (e.g., ./cake-shop-website-template)
+          path: ./   # 👈 change this if your HTML files are inside a folder (e.g., ./cake-shop-website-template)
 
       - name: Deploy to GitHub Pages
         id: deployment
