@@ -4,6 +4,12 @@ on:
   push:
     branches:
       - main   # Change if your default branch is different
+  workflow_dispatch:   # ✅ allows manual trigger from GitHub Actions tab
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write   # ✅ required for deploy-pages@v4
 
 jobs:
   deploy:
@@ -11,15 +17,15 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4   # ✅ updated version
+        uses: actions/checkout@v4   # ✅ latest version
 
       - name: Setup Pages
-        uses: actions/configure-pages@v3   # ✅ correct for GitHub Pages
+        uses: actions/configure-pages@v3   # ✅ required for GitHub Pages
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3   # ✅ latest, not deprecated
+        uses: actions/upload-pages-artifact@v3   # ✅ latest version
         with:
-          path: ./   # Path to your HTML files
+          path: ./   # 👈 change this if your HTML files are inside a folder (e.g., ./cake-shop-website-template)
 
       - name: Deploy to GitHub Pages
         id: deployment
