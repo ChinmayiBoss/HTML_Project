@@ -18,21 +18,32 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 20
-        run: npm install --force
+      - run: npm install --force
 
       - name: Build project
         run: |
           npm run build
           ls -R build/
-          npm start
 
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ SSH_HOST }}
-          username: ${{ SSH_USERNAME }}
-          key: ${{ SSH_PRIVATE_KEY }}
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           source: "./build/*"
           target: "/var/www/html"
           rm: true
+
+      - name: Start Node.js app on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            cd /var/www/html
+            npm install --force
+            nohup npm start > app.log 2>&1 &
