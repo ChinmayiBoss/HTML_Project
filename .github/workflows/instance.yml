@@ -21,8 +21,9 @@ jobs:
           username: ${{ SSH_USERNAME }}
           key: ${{ SSH_PRIVATE_KEY }}
           port: 22
-          source: "./HTML_Project*"           
+          source: "./HTML_Project/*"   
           target: "/var/www/html"
+          rm: true                     
 
       - name: Configure Apache to listen on port 8080
         uses: appleboy/ssh-action@v1.0.0
