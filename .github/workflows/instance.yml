@@ -25,6 +25,20 @@ jobs:
           npm run build
           ls -R build/
 
+      # Step 1: Clean old build on EC2
+      - name: Clean old build on EC2
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "Cleaning old build..."
+            sudo rm -rf /var/www/html/*
+            sudo mkdir -p /var/www/html
+
+      # Step 2: Deploy new build
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -34,8 +48,9 @@ jobs:
           port: 22
           source: "./build/*"
           target: "/var/www/html"
-          rm: true
           script: |
             cd /var/www/html
             npm install --force
             nohup npm start > app.log 2>&1 &
+
+     
