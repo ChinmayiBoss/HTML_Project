@@ -1,0 +1,30 @@
+name: Deploy HTML to EC2
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22   # <-- explicitly specify SSH port
+          source: "./HTML_Project/*"
+          target: "/var/www/html"
+          script: |
+            # change Apache port
+            sudo sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf
+            sudo sed -i 's/<VirtualHost \*:80>/<VirtualHost \*:8080>/' /etc/apache2/sites-available/000-default.conf
+            sudo systemctl restart apache2
