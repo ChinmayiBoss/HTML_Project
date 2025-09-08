@@ -28,9 +28,9 @@ jobs:
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
           port: 22
           source: "./build/*"
           target: "/var/www/html"
@@ -39,9 +39,9 @@ jobs:
       - name: Start Node.js app on EC2
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
           port: 22
           script: |
             cd /var/www/html
