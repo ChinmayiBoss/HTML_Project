@@ -17,19 +17,19 @@ jobs:
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
           port: 22
-          source: "./*"           # ✅ fixed here
+          source: "./*"           
           target: "/var/www/html"
 
       - name: Configure Apache to listen on port 8080
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
           port: 22
           script: |
             sudo sed -i 's/Listen 80/Listen 8080/' /etc/apache2/ports.conf
