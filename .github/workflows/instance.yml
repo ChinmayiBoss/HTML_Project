@@ -33,11 +33,7 @@ jobs:
           key: ${{ SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # Set directory permissions
+            sudo chown -R www-data:www-data /var/www/html
             sudo find /var/www/html -type d -exec chmod 755 {} \;
-            
-            # Set file permissions
             sudo find /var/www/html -type f -exec chmod 644 {} \;
-            
-            # Restart Apache to apply changes
             sudo systemctl restart apache2
