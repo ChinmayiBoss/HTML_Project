@@ -48,13 +48,3 @@ jobs:
             sudo find /var/www/html -type d -exec chmod 755 {} \;
             sudo find /var/www/html -type f -exec chmod 644 {} \;
             sudo systemctl restart apache2
-
-      - name: Verify deployed files
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ SSH_HOST }}
-          username: ${{ SSH_USERNAME }}
-          key: ${{ SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            ls -R /var/www/html
