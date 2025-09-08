@@ -35,14 +35,6 @@ jobs:
           source: "./build/*"
           target: "/var/www/html"
           rm: true
-
-      - name: Start Node.js app on EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ SSH_HOST }}
-          username: ${{ SSH_USERNAME }}
-          key: ${{ SSH_PRIVATE_KEY }}
-          port: 22
           script: |
             cd /var/www/html
             npm install --force
