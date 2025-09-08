@@ -21,7 +21,7 @@ jobs:
           username: ${{ SSH_USERNAME }}
           key: ${{ SSH_PRIVATE_KEY }}
           port: 22
-          source: "./*"           
+          source: "./HTML_Project*"           
           target: "/var/www/html"
 
       - name: Configure Apache to listen on port 8080
