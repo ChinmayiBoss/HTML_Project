@@ -1,0 +1,85 @@
+name: CI/CD Web Project Deployment
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      # 3️⃣ Install dependencies
+      - name: Install dependencies
+        run: npm install --force
+
+      # 4️⃣ Build project
+      - name: Build project
+        run: |
+          npm run build
+          ls -R build/
+
+      # 5️⃣ Clean old build on server
+      - name: Clean old build on server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "Cleaning old build..."
+            sudo rm -rf /var/www/html/*
+            sudo mkdir -p /var/www/html
+
+      # 6️⃣ Deploy new build
+      - name: Deploy build to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
+          port: 22
+          source: "./build/*"
+          target: "/var/www/html"
+
+      # 7️⃣ Start/restart app on server
+      - name: Start/restart server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            # For static site (Apache)
+            sudo systemctl restart apache2
+
+            # For Node.js app with PM2 (uncomment if needed)
+            # cd /var/www/html
+            # npm install --force
+            # pm2 restart myapp || pm2 start npm --name "myapp" -- start
+
+      # 8️⃣ Verify deployed files
+      - name: Verify deployment
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "Files deployed in /var/www/html:"
+            ls -R /var/www/html
