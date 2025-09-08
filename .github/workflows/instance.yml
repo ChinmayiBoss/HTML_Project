@@ -11,44 +11,38 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Build step (if you have a build command, e.g., npm run build)
-      # For plain HTML/CSS you can skip this step or add commands like minification
       - name: Build project
         run: |
           echo "Building project..."
-          # Example: If you use npm to build
-          # npm install
-          # npm run build
-          # For plain HTML/CSS, you can copy files to a build folder
           mkdir -p build
-          cp -r HTML_Project/* build/
+          cp -r ./* build/     # Copy all repo files into build folder
+          ls -l build/          # Optional: verify contents
 
-      # 3️⃣ Deploy to EC2
+     
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
           port: 22
-          source: "./build/*"        # Deploy files from the build folder
+          source: "./build/*"        
           target: "/var/www/html"
-          rm: true                   # Overwrite old files
+          rm: true                   
 
-      # 4️⃣ Fix permissions & restart Apache
+     
       - name: Configure Apache and fix permissions
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USERNAME }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # Set ownership to www-data
+            # Change ownership so Apache can serve files
             sudo chown -R www-data:www-data /var/www/html
             
             # Set directory permissions
@@ -57,5 +51,5 @@ jobs:
             # Set file permissions
             sudo find /var/www/html -type f -exec chmod 644 {} \;
             
-            # Restart Apache
+            # Restart Apache to apply changes
             sudo systemctl restart apache2
