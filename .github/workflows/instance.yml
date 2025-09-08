@@ -11,17 +11,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Build project (copy all files to build folder)
       - name: Build project
         run: |
           echo "Building project..."
-          mkdir -p build
-          cp -r ./* build/     # Copy all repo files into build folder
-          ls -l build/          # Optional: verify contents
+          rm -rf build                 # Remove old build folder
+          mkdir build
+          rsync -av --exclude='.git' ./ ./build/   # Copy all files including hidden
+          echo "Build folder contents:"
+          ls -R build/
 
-     
+      # 3️⃣ Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -29,11 +33,11 @@ jobs:
           username: ${{ SSH_USERNAME }}
           key: ${{ SSH_PRIVATE_KEY }}
           port: 22
-          source: "./build/*"        
+          source: "./build/*"
           target: "/var/www/html"
-          rm: true                   
+          rm: true        # Remove remote files not in build folder
 
-     
+      # 4️⃣ Configure Apache and fix permissions
       - name: Configure Apache and fix permissions
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -42,14 +46,19 @@ jobs:
           key: ${{ SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            # Change ownership so Apache can serve files
             sudo chown -R www-data:www-data /var/www/html
-            
-            # Set directory permissions
             sudo find /var/www/html -type d -exec chmod 755 {} \;
-            
-            # Set file permissions
             sudo find /var/www/html -type f -exec chmod 644 {} \;
-            
-            # Restart Apache to apply changes
             sudo systemctl restart apache2
+
+      # 5️⃣ Optional: Verify deployed files
+      - name: Verify deployed files
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "Files deployed in /var/www/html:"
+            ls -R /var/www/html
