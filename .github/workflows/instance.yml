@@ -21,36 +21,30 @@ jobs:
       - run: npm install --force
 
       - name: Build project
-        run: |
-          npm run build
-          ls -R build/
+        run: npm run build
 
-      # Step 1: Clean old build on EC2
-      - name: Clean old build on EC2
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ SSH_HOST }}
-          username: ${{ SSH_USERNAME }}
-          key: ${{ SSH_PRIVATE_KEY }}
-          port: 22
-          script: |
-            echo "Cleaning old build..."
-            sudo rm -rf /var/www/html/*
-            sudo mkdir -p /var/www/html
-
-      # Step 2: Deploy new build
-      - name: Deploy to EC2
+      # Step 1: Clean and Deploy new build
+      - name: Deploy build to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ SSH_HOST }}
           username: ${{ SSH_USERNAME }}
           key: ${{ SSH_PRIVATE_KEY }}
           port: 22
-          source: "./build/*"
+          source: "./build/" # Copy the entire build directory
           target: "/var/www/html"
           script: |
-            cd /var/www/html
-            npm install --force
-            nohup npm start > app.log 2>&1 &
-
-     
+            # Remove old files in target dir to avoid conflicts, if any.
+            sudo rm -rf /var/www/html/*
+            
+            # Move files from the `build` subdirectory to the root.
+            sudo mv /var/www/html/build/* /var/www/html/
+            
+            # Clean up the now-empty build directory
+            sudo rmdir /var/www/html/build
+            
+            # (Optional) Set correct permissions for the web server
+            sudo chown -R www-data:www-data /var/www/html
+            
+            # Restart the web server (e.g., Nginx or Apache2)
+            sudo systemctl restart nginx # or apache2
