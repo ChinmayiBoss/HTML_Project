@@ -11,21 +11,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Build project (copy all files to build folder)
       - name: Build project
         run: |
           echo "Building project..."
-          rm -rf build                 # Remove old build folder
+          rm -rf build
           mkdir build
-          rsync -av --exclude='.git' ./ ./build/   # Copy all files including hidden
+          rsync -av --exclude='.git' ./ ./build/
           echo "Build folder contents:"
           ls -R build/
 
-      # 3️⃣ Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -35,10 +32,9 @@ jobs:
           port: 22
           source: "./build/*"
           target: "/var/www/html"
-          rm: true        # Remove remote files not in build folder
+          rm: true
 
-      # 4️⃣ Configure Apache and fix permissions
-      - name: Configure Apache and fix permissions
+      - name: Fix Apache permissions
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ SSH_HOST }}
@@ -51,7 +47,6 @@ jobs:
             sudo find /var/www/html -type f -exec chmod 644 {} \;
             sudo systemctl restart apache2
 
-      # 5️⃣ Optional: Verify deployed files
       - name: Verify deployed files
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -62,3 +57,5 @@ jobs:
           script: |
             echo "Files deployed in /var/www/html:"
             ls -R /var/www/html
+            echo "Deployed commit:"
+            git --git-dir=/var/www/html/.git rev-parse HEAD || echo "No git info"
