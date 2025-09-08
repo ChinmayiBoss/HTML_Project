@@ -11,29 +11,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v4
 
-      # 2️⃣ Setup Node.js environment
-      - name: Setup Node.js
+      - name: Setup Node.js & Install deps
         uses: actions/setup-node@v3
         with:
-          node-version: 20   # Use your Node version
+          node-version: 20
+        run: npm install --force
 
-      # 3️⃣ Install dependencies
-      - name: Install Node.js dependencies
-        run: |
-          npm install --force
-
-      # 4️⃣ Build project
       - name: Build project
         run: |
           npm run build
-          echo "Build folder contents:"
           ls -R build/
 
-      # 5️⃣ Deploy to EC2
       - name: Deploy to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -45,8 +36,7 @@ jobs:
           target: "/var/www/html"
           rm: true
 
-      # 6️⃣ Fix Apache permissions
-      - name: Fix Apache permissions
+      - name: Fix permissions & restart Apache
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ SSH_HOST }}
@@ -59,7 +49,6 @@ jobs:
             sudo find /var/www/html -type f -exec chmod 644 {} \;
             sudo systemctl restart apache2
 
-      # 7️⃣ Optional: Verify deployed files
       - name: Verify deployed files
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -68,7 +57,4 @@ jobs:
           key: ${{ SSH_PRIVATE_KEY }}
           port: 22
           script: |
-            echo "Files deployed in /var/www/html:"
             ls -R /var/www/html
-            echo "Deployed commit:"
-            git --git-dir=/var/www/html/.git rev-parse HEAD || echo "No git info"
