@@ -36,7 +36,7 @@ jobs:
           target: "/var/www/html"
           rm: true
 
-      - name: Fix permissions & restart Apache
+      - name: Fix permissions & restart Apache + npm start
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ SSH_HOST }}
@@ -48,3 +48,15 @@ jobs:
             sudo find /var/www/html -type d -exec chmod 755 {} \;
             sudo find /var/www/html -type f -exec chmod 644 {} \;
             sudo systemctl restart apache2
+            cd /var/www/html
+            npm start &    # Starts Node server in background
+
+      - name: Verify deployed files
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ SSH_HOST }}
+          username: ${{ SSH_USERNAME }}
+          key: ${{ SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            ls -R /var/www/html
